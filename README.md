@@ -7,59 +7,64 @@ introducing users to basic features of Travis CI.
 > If you haven't done so, please start with the
 > [initial stage](../../tree/01.intro).
 
-## What went wrong?
+## What happens after the build?
 
-Our initial build failed, because the default configuration for
-Node.js did not work well.
+Testing does not happen in a vacuum.
+Once you've written good tests and are assured of your software's
+quality, the software needs to go out in the world and be put to good
+use.
 
-In particular, the default build step (`npm test`) does not work, due
-to the wrong configuration in `package.json`.
+Travis CI allows you to automate this process for you, using a number
+of different ways to deploy the code.
 
-## Fixing the build
+## GitHub Releases
 
-We *could* fix the `script` step in `.travis.yml`, or modify
-`package.json` so that the default build script is invoked.
+[GitHub Releases](https://help.github.com/articles/about-releases/) is a way
+to associate build artifacts to a tag on your git repository.
 
-Either is a valid option, but, here, we choose the latter.
-This allows us to align our application to be consistent with the
-most popular practice for the Node.js development community.
+For example, if you have a library, and have a release, you might want to attach
+a source tarball for the release.
+You will accomplish this by tagging an appropriate commit, creating a tarball,
+and creating a GitHub release with the tarball in it.
 
-In `package.json`, find the `scripts.test` key.
-It reads:
+You can do this on the [web UI](https://help.github.com/articles/creating-releases/),
+or via [API](https://developer.github.com/v3/repos/releases/#create-a-release).
 
-```javascript
-  "scripts": {
-    "test": "false"
-  },
-```
+Travis CI automates the API call with the use of [`dpl`](https://github.com/travis-ci/dpl).
+You will interact with `dpl` by giving its configuration in the `deploy` key in
+`.travis.yml`.
 
-This means that `npm test` executes the `false` command, which
-always exits with status code 1.
+### Create a GitHub token with `public_repo` scope
 
-It turns out, our test code with written with `mocha`, so we rewrite
-this to:
+Before setting up Travis CI for GitHub Releases, we need a special-purpose GitHub
+token that can create a release.
 
-```javascript
-  "scripts": {
-    "test": "mocha" # <== new
-  },
-```
+Go to the [tokens](https://github.com/settings/tokens) page, and generate a new
+token with `public_repo` scope.
 
-(You might notice that the command `mocha` by itself may fail,
-but this is OK. `npm` will take care of it; run `npm test` to confirm.)
+Copy this to your clipboard.
 
-Commit this change, and push to GitHub.
+### Handling GitHub authentication
 
-```sh-session
-$ git add package.json
-$ git commit -m "Run `mocha` in `script`"
-$ git push origin
-```
+In order to create a release, you need to provide Travis CI with a GitHub
+token which has appropriate scope.
+Since our repository is public, committing the token in plain text is undesirable.
+To handle such sensitive information, Travis CI allows users to store repository-specific
+secrets.
 
-## Celebrate the passing build
+To set secure environment variables, go to your repository's Settings page at
+https://travis-ci.org/OWNER/travis-intro-ruby/settings.
 
-The build passes now. Yes! 🎉
+We will create an environment variable which will not be displayed in our logs
+(so that bystanders cannot see it):
+
+1. Name this `GITHUB_OAUTH_TOKEN`
+1. Paste the token into the Value field
+1. Leave the "Display value in build log" in the "OFF" position.
+1. Click on the "Add" button
+
+Now, your build can use the `GITHUB_OAUTH_TOKEN` in the build.
 
 ## Next step
 
-In [the next step](../../tree/05.deployment), we learn about deploying our code.
+In [the grand finale](../../tree/06.deployment-pt2), we will create a GitHub Release!

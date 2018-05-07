@@ -21,10 +21,11 @@ This file is very short:
 
 ```yaml
 language: node_js
+node: '8'
 ```
 
 This tells Travis CI that we have a Node.js repository on our hands,
-and tells Travis CI to deal with it accordingly.
+and tells Travis CI to use Node.js 8.
 In more concrete terms, it will make assumptions about which version
 of Node.js runtime to use, what commands to run, and so on.
 
